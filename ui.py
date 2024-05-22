@@ -1,6 +1,7 @@
 import pygame
 from settings import *
 
+
 class UI:
     def __init__(self):
         
@@ -71,7 +72,6 @@ class UI:
         magic_rect=magic_surf.get_rect(center = bg_rect.center)
 
         self.display_surface.blit(magic_surf,magic_rect)
-
 
     def display(self,player):
         self.show_bar(player.health, player.stats['health'], self.health_bar_rect, HEALTH_COLOR)

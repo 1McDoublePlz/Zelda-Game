@@ -7,6 +7,8 @@ from support import *
 from random import choice
 from weapon import Weapon
 from ui import UI 
+from enemy import Enemy
+
 
 
 class Level:
@@ -31,7 +33,8 @@ class Level:
         layouts = {
             'boundary':import_csv_layout('1 - level/map/map_FloorBlocks.csv'),
             'grass': import_csv_layout('1 - level/map/map_Grass.csv'),
-            'object': import_csv_layout('1 - level/map/map_LargeObjects.csv')
+            'object': import_csv_layout('1 - level/map/map_LargeObjects.csv'),
+            'entities' : import_csv_layout('1 - level/map/map_Entities.csv')
         }
         graphics = {
             'grass': import_folder('1 - level/graphics/grass'),
@@ -55,13 +58,21 @@ class Level:
                             surf = graphics['objects'][int(col)]
                             Tile((x,y), [self.visible_sprites,self.obstacle_sprites], 'object', surf)
 
-        self.player = Player(
-            (2000,1430),
-            [self.visible_sprites],
-            self.obstacle_sprites, 
-            self.create_attack, 
-            self.destroy_attack,
-            self.create_magic)
+                        if style == 'entities':
+                            if col == '394': #ID from the "tiled" map. the software used to make the make
+                                self.player = Player(
+                                    (x,y),
+                                    [self.visible_sprites],
+                                    self.obstacle_sprites, 
+                                    self.create_attack, 
+                                    self.destroy_attack,
+                                    self.create_magic)
+                            else:
+                                if col =='390': monster_name = 'bamboo'
+                                elif col == '391':monster_name = 'spirit'
+                                elif col == '392':monster_name = 'raccoon'
+                                else: monter_name = 'squid'
+                                Enemy(monster_name,(x,y),[self.visible_sprites],self.obstacle_sprites)
     
     def create_attack(self):
         self.current_attack= Weapon(self.player, [self.visible_sprites])
@@ -81,6 +92,7 @@ class Level:
         #update and draw game
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
+        self.visible_sprites.enemy_update(self.player)
         self.ui.display(self.player)
 
 class YSortCameraGroup(pygame.sprite.Group):
@@ -98,6 +110,8 @@ class YSortCameraGroup(pygame.sprite.Group):
         self.floor_rect = self.floor_surf.get_rect(topleft = (0,0))
 
     def custom_draw(self,player):
+
+
         #getting the offset
         self.offset.x = player.rect.centerx - self.half_width
         self.offset.y = player.rect.centery - self.half_height
@@ -110,3 +124,8 @@ class YSortCameraGroup(pygame.sprite.Group):
         for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
+
+    def enemy_update(self,player):
+        enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite,'sprite_type') and sprite.sprite_type == 'enemy']
+        for sprite in enemy_sprites:
+            sprite.enemy_update(player)
