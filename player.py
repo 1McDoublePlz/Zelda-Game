@@ -9,7 +9,7 @@ class Player(Entity):
         super().__init__(groups)
         self.image = pygame.image.load('test/player.png').convert_alpha()
         self.rect = self.image.get_rect(topleft = pos)
-        self.hitbox =self.rect.inflate(0,-26)
+        self.hitbox =self.rect.inflate(-6,HITBOX_OFFSET['player'])
 
         #graphics setup
         self.import_player_assets()
@@ -51,6 +51,10 @@ class Player(Entity):
         self.hurt_time = None
         self.invulnerability_duration = 500
 
+        #import sound
+        self.weapon_attack_sound = pygame.mixer.Sound('1 - level/audio/sword.wav')
+        self.weapon_attack_sound.set_volume(0.4)
+
     def import_player_assets(self):
         character_path = '1 - level/graphics/player/'
         self.animations = {'up': [],'down': [], 'left': [], 'right':[],
@@ -89,6 +93,7 @@ class Player(Entity):
                 self.attacking = True
                 self.attack_time = pygame.time.get_ticks()
                 self.create_attack()
+                self.weapon_attack_sound.play()
                 
             #magic input
             if keys[pygame.K_LCTRL]:
@@ -189,6 +194,12 @@ class Player(Entity):
         spell_damage = magic_data[self.magic]['strength']
         return base_damage + spell_damage
 
+    def get_value_by_index(self,index):
+        return list(self.stats.values())[index]
+
+    def get_cost_by_index(self,index):
+         return list(self.upgrade_cost.values())[index]
+    
     def energy_recovery(self):
         if self.energy < self.stats['energy']:
             self.energy += 0.01 * self.stats['magic']
@@ -200,5 +211,5 @@ class Player(Entity):
         self.cooldowns()
         self.get_status()
         self.animate()
-        self.move(self.speed)
+        self.move(self.stats['speed'])
         self.energy_recovery()
