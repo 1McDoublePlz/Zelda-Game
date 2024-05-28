@@ -52,8 +52,20 @@ class AnimationPlayer:
         ParticleEffect(pos,animation_frames,groups)
 
     def create_particles(self,animation_type, pos, groups):
-        animation_frames = self.frames[animation_type]  
-        ParticleEffect(pos,animation_frames,groups)
+       # animation_frames = self.frames[animation_type]  
+       # ParticleEffect(pos,animation_frames,groups)
+        try:
+            animation_frames = self.frames[animation_type]
+            if animation_frames:  # Ensure it's not empty
+                ParticleEffect(pos, animation_frames, groups)
+            else:
+                print(f"Warning: animation_frames for '{animation_type}' is empty.")
+        except IndexError as e:
+            print(f"IndexError: {e}. Retrying to create particles for '{animation_type}'")
+            self.create_particles(animation_type, pos, groups)
+        except KeyError as e:
+            print(f"KeyError: {e}. Animation type '{animation_type}' not found in frames.")
+
 
 class ParticleEffect(pygame.sprite.Sprite):
     def __init__ (self, pos, animation_frames, groups):
